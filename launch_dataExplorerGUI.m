@@ -1,3 +1,4 @@
+% v- 0.0.1
 % Tested on MATLAB 2024b.
 % Requires MATLAB 2022b or higher.
 % Requires the "GUI Layout Toolbox" (install it from the HOME tab, Adds-On:
@@ -7,7 +8,7 @@
 
 %%
 % clone or download the repository from:
-% 
+% https://github.com/iurillilab/dataExplorerGUI
 
 % input the local path to the dataExplorerGUI repository:
 path2scripts = '/Users/galileo/GitHub/dataExplorerGUI'; 
