@@ -1,4 +1,4 @@
-% v- 0.0.1
+% v- 0.0.2
 % Tested on MATLAB 2024b.
 % Requires MATLAB 2022b or higher.
 % Requires the "GUI Layout Toolbox" (install it from the HOME tab, Adds-On:
@@ -22,7 +22,7 @@ expRootFolder = '/Users/galileo/Dropbox/Data/explorerGUI_dataset';
 
 
 %% running the code:
-addptah(genpath(path2scripts))
+addpath(genpath(path2scripts))
 load(fullfile(expRootFolder, 'pooledTable.mat'), 'T')
 load(fullfile(expRootFolder, 'pooledDataSet.mat'), 'ts')
 

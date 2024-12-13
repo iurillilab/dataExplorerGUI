@@ -1,4 +1,5 @@
-function buildGUI(T, ts)
+function dataExplorerGUI(T, ts)
+    % v- 0.0.2
     % Create full-screen GUI figure
     f = uifigure('Name', 'Custom GUI', 'NumberTitle', 'off', 'Units', 'normalized', 'WindowStyle', 'normal', 'Position', [0 0 1 1], 'AutoResizeChildren', 'on');
     % Define overall layout
