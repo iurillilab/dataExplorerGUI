@@ -21,9 +21,15 @@ path2scripts = '/Users/galileo/GitHub/dataExplorerGUI';
 expRootFolder = '/Users/galileo/Dropbox/Data/explorerGUI_dataset';
 
 
+% 5. (optional, for the anatomy view) path to the light atlas file, made once
+%    with anatomy/make_anatomyAtlasLite.m (see its header). If the file is
+%    not found, the GUI asks for it when "Open anatomy view" is pressed.
+atlasFile = fullfile(expRootFolder, 'anatomyAtlasLite.mat');
+
+
 %% running the code:
 addpath(genpath(path2scripts))
 load(fullfile(expRootFolder, 'pooledTable.mat'), 'T')
 load(fullfile(expRootFolder, 'pooledDataSet.mat'), 'ts')
 
-dataExplorerGUI(T, ts);
+dataExplorerGUI(T, ts, atlasFile);

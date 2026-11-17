@@ -1,4 +1,6 @@
-function dataExplorerGUI(T, ts)
+function dataExplorerGUI(T, ts, atlasFile)
+    % atlasFile (optional): anatomyAtlasLite.mat made by anatomy/make_anatomyAtlasLite.m
+    if nargin < 3, atlasFile = ''; end
     % v- 0.0.2
     % Create full-screen GUI figure
     f = uifigure('Name', 'Custom GUI', 'NumberTitle', 'off', 'Units', 'normalized', 'WindowStyle', 'normal', 'Position', [0 0 1 1], 'AutoResizeChildren', 'on');
@@ -42,6 +44,8 @@ function dataExplorerGUI(T, ts)
     numModules = 0;
     h = struct;
     T_ordinal = 1;
+    tableSelOrdinals = [];   % ordinals of rows highlighted in the table
+    anat = [];               % anatomy viewer handle (anatomy/anatomyViewer.m)
 
     %% Top Section (1/3 height)
     topSection = uix.HBox('Parent', mainLayout, 'Spacing', 10);
@@ -118,7 +122,9 @@ function dataExplorerGUI(T, ts)
 
     uicontrol('Parent', settingsPanelLayout, 'Style', 'pushbutton', 'String', 'Merge PSTHs', 'FontSize', 12, 'ForegroundColor', 0.65*[ 1 1 1]); %function not implemented at the moment
 
-    set(settingsPanelLayout, 'Heights', [-1 -1 -1.8 -1.8]);
+    uicontrol('Parent', settingsPanelLayout, 'Style', 'pushbutton', 'String', 'Open anatomy view', 'FontSize', 12, 'Callback', @openAnatomy);
+
+    set(settingsPanelLayout, 'Heights', [-1 -1 -1.8 -1.8 -1.8]);
 
     set(rightDisplay, 'Heights', [-1 -1]);
 
@@ -134,6 +140,7 @@ function dataExplorerGUI(T, ts)
     function getSelectedRow(~, event)
         if ~isempty(event.Indices)
             selectedRow = event.Indices(1); % Get the row index of the selected cell
+            tableSelOrdinals = Tshow.ordinal(unique(event.Indices(:,1)));  % all highlighted rows
             T_ordinal = Tshow.ordinal(selectedRow);
             ordinalIndicator.String = sprintf('%d', T_ordinal);
             employ_Tordinal(T_ordinal);
@@ -148,6 +155,7 @@ function dataExplorerGUI(T, ts)
     function employ_Tordinal(T_ordinal)
         % update display of basic cell information:
         selectionIndicator.String = sprintf('\nmouse: %s\tuID: %d\n%s',T.mouseID{T_ordinal}, T.uID(T_ordinal), T.name{T_ordinal});
+        refreshAnatomy();
         if numModules == 0
             addNewModule;
         else
@@ -454,6 +462,8 @@ function dataExplorerGUI(T, ts)
         disp('Rules have been reset.');
         Tshow = T;
         dataTable.Data = Tshow(1:end, vars2show);
+        tableSelOrdinals = [];
+        refreshAnatomy();
     end
 
     function applyFilter(~, ~)
@@ -468,6 +478,46 @@ function dataExplorerGUI(T, ts)
         % Actual filtering logic can be implemented here
         Tshow = T(eval(rulesList.String),:);
         dataTable.Data = Tshow(1:end, vars2show);
+        tableSelOrdinals = [];
+        refreshAnatomy();
+    end
+
+    %% anatomy view (anatomy/anatomyViewer.m)
+    function openAnatomy(~, ~)
+        if ~isempty(anat) && anat.isOpen()
+            anat.focus();
+            return;
+        end
+        if ~all(ismember(["ordinal", "ccfX", "ccfY", "ccfZ"], string(T.Properties.VariableNames)))
+            uialert(f, 'T needs the columns ordinal, ccfX, ccfY, ccfZ.', 'Anatomy view');
+            return;
+        end
+        if isempty(atlasFile) || ~isfile(atlasFile)
+            [fn, pth] = uigetfile('*.mat', 'Select anatomyAtlasLite.mat (made by make_anatomyAtlasLite.m)');
+            if isequal(fn, 0), return; end
+            atlasFile = fullfile(pth, fn);
+        end
+        anat = anatomyViewer(T, atlasFile, @selectFromAnatomy);
+        refreshAnatomy();
+    end
+
+    function refreshAnatomy()
+        % colored = filtered rows (only when a filter is active) UNION rows highlighted in the table
+        if isempty(anat) || ~anat.isOpen()
+            return;
+        end
+        if height(Tshow) < height(T)
+            filtOrd = Tshow.ordinal;
+        else
+            filtOrd = [];
+        end
+        anat.update(union(double(filtOrd(:)), double(tableSelOrdinals(:))), T_ordinal);
+    end
+
+    function selectFromAnatomy(ord)
+        T_ordinal = ord;
+        ordinalIndicator.String = sprintf('%d', T_ordinal);
+        employ_Tordinal(T_ordinal);
     end
 
 
